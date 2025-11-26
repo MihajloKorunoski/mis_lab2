@@ -25,7 +25,7 @@ class MealApiService {
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
       final List<dynamic> mealsJson = data['meals'];
-      if (mealsJson == null) return []; // API returns null if no meals found
+      if (mealsJson == null) return [];
       return mealsJson.map((json) => Meal.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load meals for category $categoryName');
@@ -38,7 +38,7 @@ class MealApiService {
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
       final List<dynamic> mealsJson = data['meals'];
-      if (mealsJson == null) return []; // API returns null if no meals found
+      if (mealsJson == null) return [];
       return mealsJson.map((json) => Meal.fromJson(json)).toList();
     } else {
       throw Exception('Failed to search meals with query $query');

@@ -45,7 +45,7 @@ class _MealListScreenState extends State<MealListScreen> {
 
   Future<void> _searchAndFilterMeals(String query) async {
     if (query.isEmpty) {
-      _filterMeals(''); // Reset to category meals if search is empty
+      _filterMeals('');
     } else {
       try {
         final searchedMeals = await _apiService.searchMeals(query);
