@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/meal.dart';
 import '../services/meal_api_service.dart';
 import './meal_detail_screen.dart';
+import '../widgets/meal_item_card.dart'; // Import the new widget
 
 class MealListScreen extends StatefulWidget {
   final String categoryName;
@@ -104,7 +105,8 @@ class _MealListScreenState extends State<MealListScreen> {
                     itemCount: _filteredMeals.length,
                     itemBuilder: (context, index) {
                       final meal = _filteredMeals[index];
-                      return GestureDetector(
+                      return MealItemCard(
+                        meal: meal,
                         onTap: () {
                           Navigator.push(
                             context,
@@ -113,33 +115,6 @@ class _MealListScreenState extends State<MealListScreen> {
                             ),
                           );
                         },
-                        child: Card(
-                          elevation: 4.0,
-                          child: Column(
-                            children: [
-                              Expanded(
-                                child: Image.network(
-                                  meal.strMealThumb,
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  meal.strMeal,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
                       );
                     },
                   );

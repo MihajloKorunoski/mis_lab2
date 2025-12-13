@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/meal_detail.dart';
 import '../services/meal_api_service.dart';
+import '../services/favorite_service.dart';
 
 class MealDetailScreen extends StatefulWidget {
   final String mealId;
@@ -15,6 +16,7 @@ class MealDetailScreen extends StatefulWidget {
 class _MealDetailScreenState extends State<MealDetailScreen> {
   late Future<MealDetail> _mealDetailFuture;
   final MealApiService _apiService = MealApiService();
+  final FavoriteService _favoriteService = FavoriteService();
 
   @override
   void initState() {
@@ -42,6 +44,31 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Recipe Details'),
+        actions: [
+          ValueListenableBuilder<Set<String>>(
+            valueListenable: _favoriteService.favoriteMealIds,
+            builder: (context, favoriteIds, child) {
+              final isFavorite = _favoriteService.isFavorite(widget.mealId);
+              return IconButton(
+                icon: Icon(
+                  isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: isFavorite ? Colors.red : null,
+                ),
+                onPressed: () {
+                  _favoriteService.toggleFavorite(widget.mealId);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        isFavorite ? 'Removed from favorites' : 'Added to favorites',
+                      ),
+                      duration: const Duration(seconds: 1),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ],
       ),
       body: FutureBuilder<MealDetail>(
         future: _mealDetailFuture,
