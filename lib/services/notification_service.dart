@@ -33,19 +33,13 @@ class NotificationService {
   Future<void> initialize() async {
     if (_isInitialized) return;
 
-    try {
-      await _ensureNotificationPluginReady();
-      await _requestMessagingPermission();
-      FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
-      FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
+    await _ensureNotificationPluginReady();
+    await _requestMessagingPermission();
+    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
 
-      await scheduleDailyRandomRecipe();
-      _isInitialized = true;
-    } catch (error, stackTrace) {
-      // Avoid blocking app startup if notifications fail to initialize.
-      debugPrint('Notification initialization failed: $error');
-      debugPrint('$stackTrace');
-    }
+    await scheduleDailyRandomRecipe();
+    _isInitialized = true;
   }
 
   Future<void> handleBackgroundMessage(RemoteMessage message) async {
@@ -56,43 +50,30 @@ class NotificationService {
   Future<void> scheduleDailyRandomRecipe({
     TimeOfDay reminderTime = const TimeOfDay(hour: 9, minute: 0),
   }) async {
-    try {
-      final MealDetail randomMeal = await _mealApiService.getRandomMeal();
-      final tz.TZDateTime scheduledDate = _nextInstanceOfTime(reminderTime);
+    final MealDetail randomMeal = await _mealApiService.getRandomMeal();
+    final tz.TZDateTime scheduledDate = _nextInstanceOfTime(reminderTime);
 
-      final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
-          _localNotifications.resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>();
-      final bool canScheduleExact =
-          await androidImplementation?.canScheduleExactNotifications() ?? false;
-
-      await _localNotifications.zonedSchedule(
-        _dailyNotificationId,
-        'Random recipe of the day',
-        'Check out ${randomMeal.strMeal} today!',
-        scheduledDate,
-        NotificationDetails(
-          android: AndroidNotificationDetails(
-            _dailyChannel.id,
-            _dailyChannel.name,
-            channelDescription: _dailyChannel.description,
-            importance: Importance.high,
-            priority: Priority.high,
-            ticker: 'recipe-of-the-day',
-          ),
+    await _localNotifications.zonedSchedule(
+      _dailyNotificationId,
+      'Random recipe of the day',
+      'Check out ${randomMeal.strMeal} today!',
+      scheduledDate,
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          _dailyChannel.id,
+          _dailyChannel.name,
+          channelDescription: _dailyChannel.description,
+          importance: Importance.high,
+          priority: Priority.high,
+          ticker: 'recipe-of-the-day',
         ),
-        androidScheduleMode: canScheduleExact
-            ? AndroidScheduleMode.exactAllowWhileIdle
-            : AndroidScheduleMode.inexactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.wallClockTime,
-        matchDateTimeComponents: DateTimeComponents.time,
-        payload: randomMeal.idMeal,
-      );
-    } catch (error, stackTrace) {
-      debugPrint('Daily recipe scheduling failed: $error');
-      debugPrint('$stackTrace');
-    }
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.wallClockTime,
+      matchDateTimeComponents: DateTimeComponents.time,
+      payload: randomMeal.idMeal,
+    );
   }
 
   Future<void> _requestMessagingPermission() async {
