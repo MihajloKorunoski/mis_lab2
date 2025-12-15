@@ -16,6 +16,10 @@ void main() async {
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   await NotificationService.instance.initialize();
   runApp(const MyApp());
+
+  // Initialize notifications after the app renders to avoid blocking the UI
+  // on slow network calls during startup.
+  NotificationService.instance.initialize();
 }
 
 class MyApp extends StatelessWidget {
