@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:permission_handler/permission_handler.dart'; // Import permission_handler
 
 import '../models/meal_detail.dart';
 import '../services/meal_api_service.dart';
@@ -35,11 +36,16 @@ class NotificationService {
 
     await _ensureNotificationPluginReady();
     await _requestMessagingPermission();
-    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
 
-    await scheduleDailyRandomRecipe();
-    _isInitialized = true;
+
+    if (await Permission.scheduleExactAlarm.request().isGranted) {
+      FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+      FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
+      await scheduleDailyRandomRecipe();
+      _isInitialized = true;
+    } else {
+      debugPrint("SCHEDULE_EXACT_ALARM permission not granted.");
+    }
   }
 
   Future<void> handleBackgroundMessage(RemoteMessage message) async {
